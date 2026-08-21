@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ReconciliationRun {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  status    String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  metrics   Json?    // Stores match rate, totals, etc.
+  results   ReconciliationResult[]
+}
+
+model LedgerRecord {
+  id                 String   @id @default(uuid())
+  transactionId      String   @unique
+  orderId            String
+  paymentId          String?
+  amount             Float
+  currency           String   @default("INR")
+  transactionDate    DateTime
+  customerReference  String?
+  status             String
+  createdAt          DateTime @default(now())
+
+  // Relations
+  reconciliationResult ReconciliationResult?
+}
+
+model SettlementRecord {
+  id                 String   @id @default(uuid())
+  paymentId          String
+  orderId            String
+  settlementId       String   @unique
+  utr                String
+  grossAmount        Float
+  fee                Float
+  tax                Float
+  adjustment         Float
+  settlementAmount   Float
+  settlementDate     DateTime
+  status             String
+  createdAt          DateTime @default(now())
+
+  // Relations
+  reconciliationResult ReconciliationResult?
+}
+
+model BankRecord {
+  id                 String   @id @default(uuid())
+  bankTransactionId  String   @unique
+  utr                String
+  amount             Float
+  transactionDate    DateTime
+  description        String
+  creditDebit        String
+  status             String
+  createdAt          DateTime @default(now())
+
+  // Relations
+  reconciliationResult ReconciliationResult?
+}
+
+model ReconciliationResult {
+  id                 String   @id @default(uuid())
+  runId              String
+  classification     String   // EXACT_MATCH, PARTIAL_MATCH, MISSING_SETTLEMENT, etc.
+  ruleUsed           String?
+  amountDifference   Float?
+  notes              String?
+  aiExplanation      String?
+  aiRecommendation   String?
+  reviewStatus       String   @default("UNREVIEWED") // UNREVIEWED, RESOLVED
+  createdAt          DateTime @default(now())
+
+  // Foreign Keys
+  ledgerRecordId     String?  @unique
+  settlementRecordId String?  @unique
+  bankRecordId       String?  @unique
+
+  // Relations
+  run                ReconciliationRun @relation(fields: [runId], references: [id])
+  ledgerRecord       LedgerRecord?     @relation(fields: [ledgerRecordId], references: [id])
+  settlementRecord   SettlementRecord? @relation(fields: [settlementRecordId], references: [id])
+  bankRecord         BankRecord?       @relation(fields: [bankRecordId], references: [id])
+}

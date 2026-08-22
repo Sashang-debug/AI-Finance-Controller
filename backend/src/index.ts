@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import importRoutes from './routes/import.js';
+import reconcileRoutes from './routes/reconcile.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/import', importRoutes);
+app.use('/api/reconcile', reconcileRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -30,7 +30,7 @@ model LedgerRecord {
   createdAt          DateTime @default(now())
 
   // Relations
-  reconciliationResult ReconciliationResult?
+  reconciliationResults ReconciliationResult[]
 }
 
 model SettlementRecord {
@@ -49,7 +49,7 @@ model SettlementRecord {
   createdAt          DateTime @default(now())
 
   // Relations
-  reconciliationResult ReconciliationResult?
+  reconciliationResults ReconciliationResult[]
 }
 
 model BankRecord {
@@ -64,7 +64,7 @@ model BankRecord {
   createdAt          DateTime @default(now())
 
   // Relations
-  reconciliationResult ReconciliationResult?
+  reconciliationResults ReconciliationResult[]
 }
 
 model ReconciliationResult {
@@ -80,13 +80,17 @@ model ReconciliationResult {
   createdAt          DateTime @default(now())
 
   // Foreign Keys
-  ledgerRecordId     String?  @unique
-  settlementRecordId String?  @unique
-  bankRecordId       String?  @unique
+  ledgerRecordId     String?
+  settlementRecordId String?
+  bankRecordId       String?
 
   // Relations
   run                ReconciliationRun @relation(fields: [runId], references: [id])
   ledgerRecord       LedgerRecord?     @relation(fields: [ledgerRecordId], references: [id])
   settlementRecord   SettlementRecord? @relation(fields: [settlementRecordId], references: [id])
   bankRecord         BankRecord?       @relation(fields: [bankRecordId], references: [id])
+
+  @@unique([runId, ledgerRecordId])
+  @@unique([runId, settlementRecordId])
+  @@unique([runId, bankRecordId])
 }
